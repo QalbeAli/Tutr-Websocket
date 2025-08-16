@@ -9,7 +9,7 @@ const corsMiddleware = cors({
   origin:
     process.env.NODE_ENV === "production"
       ? process.env.ALLOWED_ORIGINS?.split(",") || [
-          "https://your-domain.vercel.app",
+          "https://tutr-lecco.vercel.app/",
         ]
       : [
           "http://localhost:3000",
@@ -101,7 +101,7 @@ const io = new Server(httpServer, {
     origin:
       process.env.NODE_ENV === "production"
         ? process.env.ALLOWED_ORIGINS?.split(",") || [
-            "https://your-domain.vercel.app",
+            "https://tutr-lecco.vercel.app/",
           ]
         : [
             "http://localhost:3000",
