@@ -297,6 +297,69 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Handle message edits
+  socket.on("message_edited", (editData) => {
+    try {
+      const {
+        conversationId,
+        senderId,
+        senderType,
+        recipientId,
+        recipientType,
+      } = editData;
+
+      if (
+        !conversationId ||
+        !senderId ||
+        !senderType ||
+        !recipientId ||
+        !recipientType
+      ) {
+        console.log("❌ Invalid message edit data:", editData);
+        return;
+      }
+
+      console.log(
+        `✏️ Message edited in conversation ${conversationId} by ${senderType}:${senderId}`
+      );
+      console.log("✏️ Full edit data:", JSON.stringify(editData, null, 2));
+
+      // Create room names for both sender and recipient
+      const senderRoom = `${senderType}:${senderId}`;
+      const recipientRoom = `${recipientType}:${recipientId}`;
+
+      // Send to sender (so they see their own edit reflected)
+      const senderRoomUsers = io.sockets.adapter.rooms.get(senderRoom);
+      if (senderRoomUsers && senderRoomUsers.size > 0) {
+        console.log(
+          `✏️ Sending edit to sender room ${senderRoom} (${senderRoomUsers.size} users)`
+        );
+        io.to(senderRoom).emit("message_edited", editData);
+      } else {
+        console.log(
+          `✏️ Sending edit to sender room ${senderRoom} (no users online)`
+        );
+      }
+
+      // Send to recipient (so they see the edit)
+      const recipientRoomUsers = io.sockets.adapter.rooms.get(recipientRoom);
+      if (recipientRoomUsers && recipientRoomUsers.size > 0) {
+        console.log(
+          `✏️ Sending edit to recipient room ${recipientRoom} (${recipientRoomUsers.size} users)`
+        );
+        io.to(recipientRoom).emit("message_edited", editData);
+      } else {
+        console.log(
+          `✏️ Sending edit to recipient room ${recipientRoom} (no users online)`
+        );
+      }
+
+      console.log(`✏️ Edit broadcasted to both sender and recipient`);
+    } catch (error) {
+      console.error("❌ Error handling message edit:", error);
+    }
+  });
+
   // Handle parent-tutor messages (same as regular messages but with different event name for clarity)
   socket.on("parent_tutor_message", (message) => {
     try {
